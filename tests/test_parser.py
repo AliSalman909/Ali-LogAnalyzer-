@@ -1,10 +1,3 @@
-"""
-Basic tests for the log parser.
-
-Run from the project root:
-    pytest
-"""
-
 import os
 import sys
 
@@ -29,7 +22,6 @@ def test_normal_text_line_parses():
 
 
 def test_json_line_parses():
-    """A JSON-formatted log line is parsed into the expected fields."""
     line = (
         '{"timestamp":"2024-03-15T14:23:01Z","ip":"192.168.1.42",'
         '"method":"GET","path":"/api/users","status":200,'
@@ -51,7 +43,6 @@ def test_seconds_convert_to_milliseconds():
 
 
 def test_missing_status_does_not_crash():
-    """A '-' status code is treated as missing without raising."""
     entry = analyzer.parse_line(
         "2024-03-15T14:23:01Z 192.168.1.42 GET /api/users - 142ms"
     )
@@ -61,7 +52,17 @@ def test_missing_status_does_not_crash():
 
 
 def test_malformed_line_returns_none():
-    """Junk, broken JSON, and blank lines all return None instead of raising."""
     assert analyzer.parse_line("this is not a log line") is None
     assert analyzer.parse_line("{ broken json") is None
     assert analyzer.parse_line("") is None
+
+
+def test_all_garbage_file_counts_as_malformed(tmp_path):
+    garbage = tmp_path / "garbage.log"
+    lines = ["this is not a log line", "????", "{ broken json", "random text here"]
+    garbage.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    stats = analyzer.analyze_file(str(garbage))
+
+    assert stats.parsed_lines == 0
+    assert stats.malformed_lines == len(lines)

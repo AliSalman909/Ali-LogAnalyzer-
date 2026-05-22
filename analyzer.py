@@ -34,7 +34,9 @@ HTTP_METHODS = {
     "HEAD", "OPTIONS", "TRACE", "CONNECT",
 }
 
-# Timestamp formats that are commonly used 
+MALFORMED_WARN_RATIO = 0.40
+
+# Timestamp formats that are commonly used
 TIMESTAMP_FORMATS = (
     "%Y-%m-%dT%H:%M:%SZ",   # 2024-03-15T14:23:01Z
     "%Y-%m-%dT%H:%M:%S",    # 2024-03-15T14:23:01
@@ -264,7 +266,22 @@ def print_report(stats: Stats, path: str = "", top_n: int = 5) -> None:
         print(f"  File: {path}")
     print(rule)
 
-    # Parsing summary 
+    # Warn if the file looks like it wasn't understood at all.
+    total_non_blank = stats.total_lines - stats.blank_lines
+    if total_non_blank == 0:
+        print("\nNOTICE: File contained no analyzable lines (empty or all blank).")
+    else:
+        malformed_rate = stats.malformed_lines / total_non_blank
+        if malformed_rate >= MALFORMED_WARN_RATIO:
+            warn_rule = "-" * 60
+            print(f"\n{warn_rule}")
+            print(f"  WARNING: {malformed_rate:.1%} of non-blank lines "
+                  f"({stats.malformed_lines}/{total_non_blank}) could not be parsed.")
+            print("  This file may not match the expected log format.")
+            print("  Results below are likely incomplete.")
+            print(warn_rule)
+
+    # Parsing summary
     print("\nPARSING SUMMARY")
     print(f"  Total lines             {stats.total_lines:>8}")
     print(f"  Parsed lines            {stats.parsed_lines:>8}")

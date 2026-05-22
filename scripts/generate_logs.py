@@ -28,7 +28,6 @@ ENDPOINTS = [
     "/api/orders", "/api/orders/88", "/api/products", "/api/search",
     "/api/report", "/health", "/static/app.js", "/static/style.css",
 ]
-# GET is weighted heavier so the mix looks like real traffic.
 METHODS = ["GET", "GET", "GET", "POST", "POST", "PUT", "DELETE"]
 STATUSES = [200, 200, 200, 200, 201, 301, 304, 400, 401, 403, 404, 500, 502, 503]
 USER_AGENTS = [
@@ -37,8 +36,19 @@ USER_AGENTS = [
     '"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"',
 ]
 REFERRERS = [
+    '"https://www.google.com/search?q=login"',
+    '"https://www.google.com/search?q=api+docs"',
+    '"https://mail.google.com/mail/u/0/"',
+    '"https://www.youtube.com/watch?v=dQw4w9WgXcQ"',
+    '"https://www.microsoft.com/en-us/software"',
+    '"https://outlook.live.com/mail/inbox"',
     '"https://example.com/home"',
     '"https://example.com/search?q=test"',
+    # Typos / invalid — ignored by the analyzer but realistic noise in real logs
+    '"https://gooogle.com/search?q=oops"',
+    '"https://microsfot.com/windows"',
+    '"htt://broken-referrer"',
+    '"not-a-url-at-all"',
 ]
 
 MALFORMED = [
